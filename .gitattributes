@@ -1,0 +1,14 @@
+* text=auto
+
+# Unity YAML
+*.unity merge=unityyamlmerge eol=lf
+*.prefab merge=unityyamlmerge eol=lf
+*.asset merge=unityyamlmerge eol=lf
+*.meta merge=unityyamlmerge eol=lf
+
+# Force text serialization for binaries
+*.png binary
+*.jpg binary
+*.fbx binary
+*.wav binary
+*.mp3 binary
