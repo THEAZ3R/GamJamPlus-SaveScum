@@ -135,6 +135,72 @@ Announce: `"!! SOMETHING WEARS YOUR FACE !!"` → `"THE HORDE MELTS INTO SLUDGE"
 
 ---
 
+## SOUNDTRACK
+
+> 100% procedural chiptune, synthesized live in code — two pulse channels (12.5 / 25 / 50% duty), a triangle bass and a noise drum kit. **No audio files.** One four-note leitmotif — **A–C–E–D** (root, third, fifth, fourth) — is rewritten into every track's key and scale, so every map and boss is the same idea in a different mood. Engine: `MusicSynth.cs` (the sound), `MusicTracks.cs` (the 10 compositions), `Music.cs` (what plays when).
+
+| Track | Where | Key | BPM | What it sounds like |
+|---|---|---|---|---|
+| **factory** | Map 1 | A minor | 150 | bouncy and bright, industrial clanks on the offbeats, a heavy layer so light it barely counts as metal |
+| **lab** | Map 2 | C# minor | 138 | cold 16th-note sequencer arps, machine beeps, a chug so tight it sounds machined |
+| **void** | Map 3 | D Phrygian | 136 → 148 | doom: swampy down-tuned gallop, flat second creeping under it, tritone stings, the leitmotif played backwards, whole bars of silence punched out of the mix |
+| **cosmic** | Map 4 | E Phrygian | 152 → 168 | wall-to-wall chug with octave leaps, a tritone crawl per phrase, eighth-note double kick, a screeching lead, a dissonant pad cluster |
+| **smasher** | THE SMASHER | E minor | 120 → 160 | slow and stomping, a hulking beast; phase two lunges to 160 and starts galloping |
+| **herald** | MACHINE HERALD | F# minor | 150, **7/8** | arp and leitmotif both run on 16-step cycles against 14-step bars — the polyrhythm is the point; phase two goes up an octave and gets ground into bits |
+| **vessel** | BROKEN VESSEL | B harmonic minor | 100 → 112, **5/4** | halloween metal: a theremin wail over a bouncing gallop, harpsichord arps crawling up diminished chords, a tolling iron bell; phase two stops singing and a drone settles in |
+| **shepard** | SHEPARD | G Phrygian | 140 → 156 | doom through a dying VHS deck: tape wobble on the melody, rewind sweeps tearing down every phrase, the motif backwards — and **the VHS freeze winds the whole mix backwards in real time** |
+| **shepard1v1** | THE MIRROR | A minor | 180 | two pulse channels trading the leitmotif half a bar at a time, no bass until bar 8; under 50% HP the fight itself slams everything heavy |
+| **ending** | the win | A minor | 56 | a music box over a slow dotted echo, no drums, sixteen bars long — and the last chord never resolves |
+
+**Four layers, mixed live:** Layer 1 = bass + drums · Layer 2 = + pulse arpeggio · Layer 3 = + lead melody · Layer 4 = **heavy** — palm-muted root + 5th + octave riffs, 16th gallops, double-kick noise, bitcrush
+
+- **Maps** open on layer 1 and climb **one layer per 14 kills**, so a fresh map always starts calmer than the last one ended.
+- **Bosses** cut in hard on layer 3; their **phase two** slams layer 4 (Smasher's re-armour, the Herald's core, the Vessel rooting itself, Shepard's leap, the mirror under half health).
+- **Warning siren**: 2.6s before every boss lands you get a rising-and-falling klaxon under the `!!` announce and the horn — it rings the whole approach window and dies on the exact frame the boss spawns and the music cuts in. The mirror gets it too, as it steps out of the rewound tape.
+- Map → map the tape fades **to silence first**, cuts underneath, then opens slowly again (1.4s between maps, 1.6s on the first track, 2s either side of the ending).
+- Dialogue ducks the music to 30%; the intro tape, death and the map transitions duck it to nothing.
+- **M** mutes the whole room — sfx and music.
+
+---
+
+## CUTSCENES
+
+The tape talks three times. Dialogue types out letter by letter with a voice blip under each one and a beat at every punctuation mark — **ENTER / SPACE skips a line, hold it to skip the page**. The picture only freezes where the tape itself wants to stop.
+
+| Scene | When | What happens |
+|---|---|---|
+| **The intro** | once per session | the tape rewinds in the dark, static clears, you run in and confront him — *"Finally caught up to you." … "I left you some friends to play with."* — then Shepard time-leaps out with a white flash and the run starts |
+| **He arrives** | first time SHEPARD spawns, map 4 | the tape stops mid-fight, the HUD glitches — *"This is exactly why the Unit had to be destroyed." … "Is this the revenge you wanted?"* — ending on your quiet *"...I'm going to kill you."* |
+| **Bare hands** | Shepard's 30% mod wipe | the HUD eats itself, *"What...?" / "What did you do?" / "Tsk."*, and the picture rewinds back into the 1V1 with an empty rifle in your hands |
+
+---
+
+## THE END
+
+**You win** by killing the MIRROR: gold `YOU WIN`, the room empties, nothing can hurt you, and the last big **T** pulses for 5 seconds with the tape ticking (and speeding up as it runs out).
+
+- **[T] REWIND THE TAPE** — the whole run rewinds: static, a white flash, and you're back at the first line of the intro with every kill, level, leap and mod ready to be earned again.
+- **Ignore it** — the T flickers out, the picture goes down like a tape stopping, and six pages type themselves out over the cliff (you next to Shepard's body, watching reality crumble). ENTER skips ahead; the epilogue always gets told.
+
+Then the card:
+
+`CONGRATS. IT'S OVER.` — **KILLS** · **LEVEL** · **TIME**
+`[T] REWIND THE TAPE — from the first cutscene` · `[R] RESTART — straight into the ring` · **RETURN TO MENU**
+
+**TIME** is the run clock, and only time actually spent in the ring counts: the menu, the how-to card, the cutscenes and every tape-freeze don't tick it. The music box (`ending`) plays under all of it.
+
+**You lose** and you get `YOU DIED` — or `THE COMMANDER ESCAPED` when the 120s bar runs out — with **[R]** to restart straight into the ring.
+
+---
+
+## MENU
+
+First screen of every session, last stop of every run: **START** (the intro tape first, once per session) · **CONTROLS** (every action rebindable — click a row, press a key, ESC cancels — plus mouse sensitivity 0.15–3.5) · **EXIT** (the tape stops and the game closes). The whole game holds still behind it.
+
+Every button has a voice, both procedural like everything else: the deck engages on open and on every confirm (`menu_go` — a tape clunk, then the leitmotif's first two notes A → C), and the cursor lands on a row with a short blip (`menu_move`).
+
+---
+
 ## CONTROLS
 
 | Input | Action |
@@ -145,7 +211,10 @@ Announce: `"!! SOMETHING WEARS YOUR FACE !!"` → `"THE HORDE MELTS INTO SLUDGE"
 | Space / Left Shift | Dash (0.75s cd, i-frames) |
 | **T** | TIMELEAP — rewind 3s (locked during bosses) |
 | **1–3** | Pick an upgrade on level-up |
+| **ENTER / Space** | Skip a line of dialogue (hold to skip the page) |
 | **R** | Restart (after run end) |
-| **M** | Mute |
+| **ESC** | Pause — **resume** · **return to menu** · **quit** |
+| **M** | Mute — music and sfx |
 
 **Run-end strings**: `YOU DIED` · `THE COMMANDER ESCAPED` · `YOU WIN`
+**On the win card**: `[T]` rewind the whole tape · `[R]` restart · **RETURN TO MENU** button (kills, level and run time are on the card)

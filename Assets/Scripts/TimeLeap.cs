@@ -314,6 +314,8 @@ public class TimeLeap : MonoBehaviour
             var pp = PlayerController.Instance;
             Sfx.PlayAt(pp != null ? (Vector2)pp.transform.position : Vector2.zero, "horn", 0.9f,
                       pendingShepard ? 0.72f : pendingVessel ? 0.8f : pendingHerald ? 1.25f : 1f);
+            // the alarm: it rings the whole approach window and dies on the spawn
+            Sfx.PlayAt(pp != null ? (Vector2)pp.transform.position : Vector2.zero, "siren", 0.9f, 1f);
         }
     }
 

@@ -202,6 +202,7 @@ static class MusicBrain
         // ---- ducking
         float want = 1f;
         if (Cutscenes.Running) want = 0.30f;                        // text blips first
+        if (PauseMenu.Opened) want = 0.30f;                         // the tape keeps playing, quietly
         if (GameManager.IntroT > 0f) want = 0f;                      // the opening tape
         if (GameManager.IsOver && !GameManager.Won) want = 0f;       // the horn takes the room
         if (pendId != null) want = 0f;                               // between maps: nothing

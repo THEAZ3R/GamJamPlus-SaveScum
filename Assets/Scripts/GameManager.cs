@@ -46,6 +46,7 @@ public class GameManager : MonoBehaviour
         EndMessage = null;
         Kills = 0;
         RunT = 0f;
+        PauseMenu.Reset();                       // every scene load starts unpaused
         shake = 0f;
         CamTarget = Vector2.zero;
         camFocus = Vector2.zero;
@@ -1496,7 +1497,10 @@ public class GameManager : MonoBehaviour
         if (hitStopT > 0f)
         {
             hitStopT -= Time.unscaledDeltaTime;
-            if (hitStopT <= 0f && !LevelUpUI.IsOpen && !Shepard.VhsActive && !Cutscenes.Running)
+            // the pause hands the world 0 and gives it back itself, so a
+            // hit-stop that runs out under it must not wake the ring up
+            if (hitStopT <= 0f && !LevelUpUI.IsOpen && !Shepard.VhsActive && !Cutscenes.Running &&
+                !PauseMenu.Opened)
                 Time.timeScale = hitStopPrev;       // resume exactly what was running
         }
 
@@ -1505,12 +1509,12 @@ public class GameManager : MonoBehaviour
         // player's Update, which used to leave the crosshair stranded)
         Aim.Tick(Screen.width, Screen.height);
 
-        // the pointer belongs to the game - a menu (or the end) hands it back.
-        // it is never locked: the reticle is read straight off the pointer's
-        // position every frame. The OS cursor is enforced EVERY frame instead
-        // of only when 'free' flips: a scene restart or a cutscene that touches
-        // Cursor.visible left the arrow showing next to the crosshair
-        bool free = GameMenu.Open || LevelUpUI.IsOpen || (IsOver && !EndPrompt);
+        // the pointer belongs to the game - a menu, the pause or the end hands
+        // it back. it is never locked: the reticle is read straight off the
+        // pointer's position every frame. The OS cursor is enforced EVERY frame
+        // instead of only when 'free' flips: a scene restart or a cutscene that
+        // touches Cursor.visible left the arrow showing next to the crosshair
+        bool free = GameMenu.Open || LevelUpUI.IsOpen || PauseMenu.Opened || (IsOver && !EndPrompt);
         cursorFree = free;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = free;
@@ -1539,6 +1543,8 @@ public class GameManager : MonoBehaviour
             Nav.Tick(Time.deltaTime, PlayerController.Instance.transform.position);
 
         if (Input.GetKeyDown(KeyCode.M)) Sfx.ToggleMute();   // the room goes quiet
+
+        PauseMenu.Poll();                         // ESC stops the tape, and picks the way out
 
         if (DesatT > 0f) DesatT = Mathf.Max(0f, DesatT - Time.unscaledDeltaTime);   // stasis holds the color
 
@@ -1730,9 +1736,10 @@ public class GameManager : MonoBehaviour
 
         if (IntroT > 0f) DrawIntro();
 
-        // the pointer is locked, so the aim cursor is drawn here - without it
-        // there is nothing to shoot at
-        if (!IsOver && !LevelUpUI.IsOpen) DrawCrosshair();
+        // the aim cursor is drawn here - without it there is nothing to shoot
+        // at. It stands down while the pause has the room (the pointer is free)
+        PauseMenu.Draw();                       // the veil sits over the hud and the reticle
+        if (!IsOver && !LevelUpUI.IsOpen && !PauseMenu.Opened) DrawCrosshair();
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (aimDebug) DrawAimDebug();

@@ -681,6 +681,7 @@ public class Shepard : MonoBehaviour
         Active = null;
         float diff = myDiff;
         Destroy(gameObject);                          // the coroutine dies with him
+        Sfx.PlayAt(pos, "siren", 1f, 0.7f);           // the same alarm, one last time
         MirrorFighter.Spawn(diff);                    // the mirror walks in
     }
 

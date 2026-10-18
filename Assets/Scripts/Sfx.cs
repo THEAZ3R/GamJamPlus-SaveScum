@@ -93,6 +93,7 @@ public static class Sfx
         Get("dash"); Get("spawn"); Get("die_small"); Get("crawl");
         Get("fuse_tick"); Get("bark"); Get("fire_cackle"); Get("elec_hum");
         Get("menu_go"); Get("menu_move");          // the menu is up before any of it
+        Get("siren"); Get("horn");                 // the first boss is close behind
     }
 
     public static void ToggleMute()
@@ -691,6 +692,21 @@ public static class Sfx
                 AddNoise(b, 0f, 0.9f, t => 0.2f * (t / 0.9f), 9000f);
                 AddTone(b, 0.2f, 0.7f, Const(2093f), t => 0.05f * Bell(0.3f, 0.3f)(t));
                 AddTone(b, 0.6f, 0.35f, Sw(1400f, 300f, 0.35f), t => 0.35f * Mathf.Exp(-t * 6f), Sqr);
+                return Make(name, b);
+
+            case "siren":                                   // the alarm before a boss lands
+                b = Buf(2.6f);                              // one full approach window, dies on the spawn
+                System.Func<float, float> chop = t => 0.8f + 0.2f * Mathf.Sin(t * 2f * Mathf.PI * 11f);
+                AddTone(b, 0f, 2.6f,                        // the wail: one rise and fall per second
+                        t => 505f + 330f * Mathf.Sin(t * 2f * Mathf.PI / 1.02f),
+                        t => 0.3f * Mathf.Clamp01(t / 0.03f) * Mathf.Clamp01((2.6f - t) / 0.25f) * chop(t),
+                        Saw);
+                AddTone(b, 0f, 2.6f,                        // its body, an octave underneath
+                        t => 252f + 165f * Mathf.Sin(t * 2f * Mathf.PI / 1.02f),
+                        t => 0.14f * Mathf.Clamp01(t / 0.05f) * Mathf.Clamp01((2.6f - t) / 0.3f) * chop(t),
+                        Saw);
+                AddNoise(b, 0f, 2.6f, t => 0.035f * Mathf.Clamp01(t / 0.06f) *
+                                            Mathf.Clamp01((2.6f - t) / 0.35f), 2400f);
                 return Make(name, b);
 
             case "horn":                                    // something large just arrived

@@ -137,7 +137,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (Cutscenes.Running || GameMenu.Open)        // the cutscene / the menu has the body
+        if (Cutscenes.Running || GameMenu.Open || PauseMenu.Opened)   // the cutscene / menu / pause has the body
         {
             moveInput = Vector2.zero;
             if (aimLine != null) aimLine.enabled = false;
