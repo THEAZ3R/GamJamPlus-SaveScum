@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     public static bool Won;                           // the mirror falls: you win
     public static string EndMessage;                 // what the run ended on
     public static int Kills;
+    public static float RunT;                        // seconds spent actually in the ring
     public static Vector2 ArenaHalf = new Vector2(16f, 9f);   // shepard shrinks it
     public static Vector2 CamTarget;                  // where the tape wants the lens
     public static bool Lab;                          // era two: the clean room
@@ -44,6 +45,7 @@ public class GameManager : MonoBehaviour
         Won = false;
         EndMessage = null;
         Kills = 0;
+        RunT = 0f;
         shake = 0f;
         CamTarget = Vector2.zero;
         camFocus = Vector2.zero;
@@ -87,6 +89,8 @@ public class GameManager : MonoBehaviour
 
         Sfx.Ensure();                       // the rig and its one listener, moved
         // out of the shot before the first frame can draw their gizmos in it
+        Music.Ensure();                     // and the other half of the silence:
+        // the chiptune rig, parked with it, silent until the run starts
 
         BuildArena();
     }
@@ -1523,6 +1527,13 @@ public class GameManager : MonoBehaviour
                 Sfx.Play("levelup");                // and we are live
             }
         }
+
+        // the run's clock: only time actually spent in the ring counts. The
+        // menu, the how-to card and the tape's cutscenes take the player out
+        // of it, and everything that freezes the game - hit-stop, the level-up
+        // table, Shepard's paused tape - sits at timeScale 0 and reads as 0
+        if (!IsOver && IntroT <= 0f && !GameMenu.Open && !Cutscenes.Running)
+            RunT += Time.deltaTime;
 
         if (!IsOver && PlayerController.Instance != null)
             Nav.Tick(Time.deltaTime, PlayerController.Instance.transform.position);

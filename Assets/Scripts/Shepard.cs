@@ -93,7 +93,7 @@ public class Shepard : MonoBehaviour
 
         health = GetComponent<Health>();
         health.OnDeath += Die;
-        health.Init(550f * GameManager.HpScale(difficulty));
+        health.Init(1000f * GameManager.HpScale(difficulty));
         health.showBar = false;                       // the named bar rides the HUD
         health.barColor = BloodRed;
         health.bloodColor = BloodRed;
@@ -589,6 +589,7 @@ public class Shepard : MonoBehaviour
             {
                 leap1 = true;
                 phase = 2;
+                Music.SetIntensity(3);             // the tape's phase two: heavy below
                 StartCoroutine(RewindLeap());
             }
             else if (leap1 && !leap2 && phase == 2 && health.current <= health.max * 0.3f)
@@ -1492,6 +1493,9 @@ public class MirrorFighter : MonoBehaviour
         if (GameManager.IsOver) { rb.SetVel(Vector2.zero); return; }
         var p = PlayerController.Instance;
         if (p == null || health == null || health.IsDead) return;
+
+        // halfway down, the mirror stops holding back: full heavy
+        if (health.current <= health.max * 0.5f) Music.SetIntensity(3);
 
         float dt = Time.deltaTime;
         Vector2 pos = transform.position;

@@ -19,6 +19,10 @@ public class Endings : MonoBehaviour
     string pageText = "";
     int kills;
     int level;
+    string clock;                                  // how long the run took
+    bool toMenu;                                   // the button was pressed: set, not loaded
+    int hotRow = -1;                               // the button the cursor is on
+    bool hotSeen;
 
     GUIStyle bigT, label, body, cardTitle, cardStat;
 
@@ -30,6 +34,10 @@ public class Endings : MonoBehaviour
             instance = g.AddComponent<Endings>();
         }
         instance.kills = GameManager.Kills;
+        instance.clock = Clock(GameManager.RunT);   // frozen: the run is over
+        instance.toMenu = false;
+        instance.hotRow = -1;
+        instance.hotSeen = false;
         var up = PlayerUpgrades.Instance;
         instance.level = up != null ? up.Level : 1;
 
@@ -142,10 +150,28 @@ public class Endings : MonoBehaviour
         while (true)
         {
             holdT += Time.unscaledDeltaTime;
+            if (toMenu) { GameFlow.ToMenu(); yield break; }   // back to the shelf
             if (Input.GetKeyDown(KeyCode.T)) { yield return Rewind(); yield break; }
             if (Input.GetKeyDown(KeyCode.R)) { GameFlow.Restart(false); yield break; }
             yield return null;
         }
+    }
+
+    // one blip when the pointer lands on the button, never one per frame
+    void Update()
+    {
+        if (card && !hotSeen) hotRow = -1;
+        hotSeen = false;
+    }
+
+    // the run's length, the way a tape counter would show it
+    static string Clock(float t)
+    {
+        int s = Mathf.FloorToInt(t);
+        if (s < 0) s = 0;
+        if (s >= 3600)
+            return (s / 3600) + ":" + ((s / 60) % 60).ToString("00") + ":" + (s % 60).ToString("00");
+        return (s / 60) + ":" + (s % 60).ToString("00");
     }
 
     IEnumerator Rewind()                                            // back to the first line
@@ -308,19 +334,65 @@ public class Endings : MonoBehaviour
 
         GUI.color = new Color(0.35f, 0.95f, 1f, a);
         cardTitle.fontSize = 54;
-        GUI.Label(new Rect(0f, Screen.height * 0.24f, Screen.width, 70f), "CONGRATS. IT'S OVER.", cardTitle);
+        GUI.Label(new Rect(0f, Screen.height * 0.22f, Screen.width, 70f), "CONGRATS. IT'S OVER.", cardTitle);
 
         GUI.color = new Color(1f, 1f, 1f, a);
         cardStat.fontSize = 28;
-        GUI.Label(new Rect(0f, Screen.height * 0.38f, Screen.width, 40f), "KILLS   " + kills, cardStat);
-        GUI.Label(new Rect(0f, Screen.height * 0.45f, Screen.width, 40f), "LEVEL   " + level, cardStat);
+        GUI.Label(new Rect(0f, Screen.height * 0.35f, Screen.width, 40f), "KILLS   " + kills, cardStat);
+        GUI.Label(new Rect(0f, Screen.height * 0.415f, Screen.width, 40f), "LEVEL   " + level, cardStat);
+        GUI.color = new Color(0.85f, 0.6f, 1f, a);
+        GUI.Label(new Rect(0f, Screen.height * 0.48f, Screen.width, 40f), "TIME   " + clock, cardStat);
 
         GUI.color = new Color(0.85f, 0.6f, 1f, a * (0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 3f)));
         label.fontSize = 22;
-        GUI.Label(new Rect(0f, Screen.height * 0.62f, Screen.width, 30f), "[T]  REWIND THE TAPE - from the first cutscene", label);
+        GUI.Label(new Rect(0f, Screen.height * 0.60f, Screen.width, 30f), "[T]  REWIND THE TAPE - from the first cutscene", label);
         GUI.color = new Color(0.8f, 0.85f, 0.92f, a * 0.8f);
-        GUI.Label(new Rect(0f, Screen.height * 0.62f + 32f, Screen.width, 30f), "[R]  RESTART - straight into the ring", label);
+        GUI.Label(new Rect(0f, Screen.height * 0.60f + 32f, Screen.width, 30f), "[R]  RESTART - straight into the ring", label);
         GUI.color = Color.white;
+
+        // the way back to the shelf: a real button, cursor and all
+        var mr = new Rect(cx - 190f, Screen.height * 0.74f, 380f, 56f);
+        if (CardButton(mr, "RETURN TO MENU", a))
+        {
+            toMenu = true;                          // loaded by the run, not from OnGUI
+        }
+    }
+
+    // one plate, lit while the pointer is on it, one blip per landing
+    bool CardButton(Rect r, string text, float a)
+    {
+        if (a < 0.5f) return false;                 // it is not on the screen yet
+
+        Vector2 mouse = Event.current.mousePosition;
+        bool hot = r.Contains(mouse);
+        bool down = hot && Event.current.type == EventType.MouseDown;
+
+        if (hot && Event.current.type == EventType.Repaint)
+        {
+            hotSeen = true;
+            if (hotRow != (int)r.y)
+            {
+                hotRow = (int)r.y;
+                Sfx.PlayAt(Vector2.zero, "menu_move", 0.55f);
+            }
+        }
+
+        GUI.color = new Color(0.02f, 0.03f, 0.05f, 0.92f * a);
+        GUI.DrawTexture(r, Texture2D.whiteTexture);
+        GUI.color = hot ? new Color(0.35f, 0.95f, 1f, a) : new Color(1f, 1f, 1f, 0.25f * a);
+        float t = hot ? 2.5f : 1.5f;
+        GUI.DrawTexture(new Rect(r.x, r.y, r.width, t), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(r.x, r.yMax - t, r.width, t), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(r.x, r.y, t, r.height), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(r.xMax - t, r.y, t, r.height), Texture2D.whiteTexture);
+
+        GUI.color = hot ? new Color(0.45f, 0.98f, 1f, a) : new Color(1f, 1f, 1f, a);
+        label.fontSize = 24;
+        GUI.Label(r, text, label);
+        GUI.color = Color.white;
+
+        if (down) { Event.current.Use(); return true; }
+        return false;
     }
 
     // ============================================================ THE CLIFF

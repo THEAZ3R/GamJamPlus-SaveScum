@@ -23,6 +23,17 @@ public static class GameFlow
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
+    // the end card's other button: put the tape back on the shelf. The scene
+    // reload rebuilds the whole run, and MenuOnStart drops the menu over the
+    // fresh arena. The intro has already been seen, so START goes straight
+    // into the ring from here
+    public static void ToMenu()
+    {
+        MenuOnStart = true;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
 }
 
 // THE MENU: start, controls (with rebinding and mouse sensitivity) and exit,
@@ -40,6 +51,9 @@ public class GameMenu : MonoBehaviour
     GUIStyle title, small, hint, rowStyle;
     GUIStyleState hover, plain;
     int lastW, lastH;
+    int hotRow = -1;                               // which row the cursor is on
+    bool hotSeen;                                  // ...and whether it was on one last frame
+    float hoverGate;                               // the open's own sound owns the first moment
 
     public static GameMenu Show()
     {
@@ -49,8 +63,13 @@ public class GameMenu : MonoBehaviour
             Instance = g.AddComponent<GameMenu>();
         }
         Open = true;
+        Instance.gameObject.SetActive(true);
         Instance.page = Page.Main;
         Instance.rebind = null;
+        Instance.hotRow = -1;
+        Instance.hotSeen = false;
+        Instance.hoverGate = Time.unscaledTime + 0.35f;
+        Sfx.PlayAt(Vector2.zero, "menu_go", 0.7f);   // the deck engages
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -68,6 +87,12 @@ public class GameMenu : MonoBehaviour
     {
         if (!Open) return;
 
+        // one blip when the pointer LANDS on a row, never one per frame: the
+        // key is cleared on the first frame that finds nothing under it, so
+        // stepping off and back on plays again
+        if (!hotSeen) hotRow = -1;
+        hotSeen = false;
+
         // a key press while a row is listening becomes that row's key
         if (rebind.HasValue)
         {
@@ -79,7 +104,7 @@ public class GameMenu : MonoBehaviour
                 if (kc >= KeyCode.Mouse0) continue;              // mouse buttons are not bindings
                 if (!Input.GetKeyDown(kc)) continue;
                 Bindings.SetKey(rebind.Value, kc);
-                Sfx.Play("pickup");
+                Sfx.Play("menu_go");
                 rebind = null;
                 return;
             }
@@ -89,8 +114,20 @@ public class GameMenu : MonoBehaviour
         if (Bindings.Down(Bindings.Action.Confirm) && page == Page.Main) BeginGame();
     }
 
+    // the cursor landing on something: once per landing, quiet enough to hear
+    // a hundred times
+    void Hover(int key)
+    {
+        hotSeen = true;
+        if (hotRow == key) return;
+        hotRow = key;                               // the landing is recorded either way,
+        if (Time.unscaledTime < hoverGate) return;  // so the gate never queues a late blip
+        Sfx.PlayAt(Vector2.zero, "menu_move", 0.55f);
+    }
+
     void BeginGame()
     {
+        Sfx.PlayAt(Vector2.zero, "menu_go", 0.8f);
         Bindings.Save();
         Close();
         var gm = GameManager.Instance;
@@ -159,7 +196,7 @@ public class GameMenu : MonoBehaviour
 
         if (Button(new Rect(cx - w * 0.5f, y, w, h), "START", false)) BeginGame();
         if (Button(new Rect(cx - w * 0.5f, y + (h + gap), w, h), "CONTROLS", false))
-        { page = Page.Controls; Sfx.Play("pickup"); }
+        { page = Page.Controls; Sfx.Play("menu_go"); }
         if (Button(new Rect(cx - w * 0.5f, y + (h + gap) * 2f, w, h), "EXIT", false))
         {
             Sfx.Play("vhs_stop");
@@ -209,7 +246,8 @@ public class GameMenu : MonoBehaviour
                       listening ? "PRESS A KEY..." : Bindings.Name(Bindings.Key(a)), ks);
             GUI.color = Color.white;
 
-            if (down && r.Contains(mouse)) { rebind = a; Sfx.Play("pickup"); Event.current.Use(); }
+            if (down && r.Contains(mouse)) { rebind = a; Sfx.Play("menu_go"); Event.current.Use(); }
+            else if (hot && Event.current.type == EventType.Repaint) Hover((int)r.y);
         }
 
         // mouse sensitivity: a slider, and the value it is on
@@ -248,7 +286,7 @@ public class GameMenu : MonoBehaviour
         if (Button(back, rebind.HasValue ? "CANCEL" : "BACK", true))
         {
             if (rebind.HasValue) rebind = null;
-            else { page = Page.Main; Sfx.Play("pickup"); }
+            else { page = Page.Main; Sfx.Play("menu_go"); }
         }
     }
 
@@ -257,6 +295,7 @@ public class GameMenu : MonoBehaviour
         Vector2 mouse = Event.current.mousePosition;
         bool hot = r.Contains(mouse);
         bool down = hot && Event.current.type == EventType.MouseDown;
+        if (hot && Event.current.type == EventType.Repaint) Hover((int)r.y);
 
         GUI.color = new Color(0.02f, 0.03f, 0.05f, 0.92f);
         GUI.DrawTexture(r, Texture2D.whiteTexture);

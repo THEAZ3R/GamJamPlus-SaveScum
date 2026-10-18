@@ -92,6 +92,7 @@ public static class Sfx
         Get("pew"); Get("enemy_shot"); Get("step"); Get("step_wet");
         Get("dash"); Get("spawn"); Get("die_small"); Get("crawl");
         Get("fuse_tick"); Get("bark"); Get("fire_cackle"); Get("elec_hum");
+        Get("menu_go"); Get("menu_move");          // the menu is up before any of it
     }
 
     public static void ToggleMute()
@@ -663,6 +664,25 @@ public static class Sfx
             case "pickup":
                 b = Buf(0.1f);
                 AddTone(b, 0f, 0.08f, Sw(800f, 1300f, 0.08f), t => 0.25f * Mathf.Exp(-t * 40f));
+                return Make(name, b);
+
+            case "menu_go":                                 // the deck engages, then the cursor commits
+                b = Buf(0.34f);
+                AddNoise(b, 0f, 0.05f, t => 0.30f * Mathf.Exp(-t * 70f), 2600f);   // the button's clunk
+                AddTone(b, 0f, 0.11f, Sw(240f, 84f, 0.11f), t => 0.24f * Mathf.Exp(-t * 30f), Saw);
+                AddTone(b, 0.04f, 0.14f, Const(880f),                       // A
+                        t => 0.24f * Bell(0.02f, 0.08f)(t), Sqr);
+                AddTone(b, 0.13f, 0.21f, Const(1046.5f),                    // C: the leitmotif's first step,
+                        t => 0.30f * Bell(0.03f, 0.12f)(t), Sqr);            // the same two notes the tape
+                AddTone(b, 0.13f, 0.21f, Const(2093f),                      // is built out of
+                        t => 0.07f * Bell(0.03f, 0.12f)(t));
+                return Make(name, b);
+
+            case "menu_move":                               // the cursor landing on a row
+                b = Buf(0.07f);
+                AddTone(b, 0f, 0.05f, Const(1568f), t => 0.15f * Mathf.Exp(-t * 62f), Sqr);
+                AddTone(b, 0f, 0.04f, Const(3136f), t => 0.045f * Mathf.Exp(-t * 80f));
+                AddNoise(b, 0f, 0.014f, t => 0.06f * Mathf.Exp(-t * 300f), 5200f);   // tape grit
                 return Make(name, b);
 
             case "rewind":                                  // time runs backwards for a second

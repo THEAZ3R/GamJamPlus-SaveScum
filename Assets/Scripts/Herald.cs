@@ -98,7 +98,7 @@ public class Herald : MonoBehaviour
 
         health = GetComponent<Health>();
         health.OnDeath += Die;
-        health.Init(435f * GameManager.HpScale(difficulty));   // heavier: reality bent around the eye
+        health.Init(700f * GameManager.HpScale(difficulty));   // heavier: reality bent around the eye
         health.showBar = false;                       // the named bar rides the HUD
         health.barColor = NeonPurple;
 
@@ -625,6 +625,7 @@ public class Herald : MonoBehaviour
         Sfx.PlayAt(transform.position, "horn", 0.95f, 1.3f);
 
         BuildPhaseShield();                           // the small ward: permanent from here
+        Music.SetIntensity(3);                        // phase two: up an octave, into the bits
         if (TimeLeap.Instance != null)
             TimeLeap.Instance.Announce("THE HERALD'S CORE IGNITES", 2.2f);
     }

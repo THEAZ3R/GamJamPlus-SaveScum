@@ -77,7 +77,7 @@ public class BrokenVessel : MonoBehaviour
 
         health = GetComponent<Health>();
         health.OnDeath += Die;
-        health.Init(700f * GameManager.HpScale(difficulty));   // a wall of dead things
+        health.Init(1500f * GameManager.HpScale(difficulty));   // a wall of dead things
         health.showBar = false;                       // the named bar rides the HUD
         health.barColor = Rust;
         health.bloodColor = new Color(0.45f, 0.82f, 0.18f);   // green ichor
@@ -525,6 +525,7 @@ public class BrokenVessel : MonoBehaviour
         Rubble.Spawn((Vector2)transform.position + new Vector2(1.8f, 0.4f));
         Rubble.Spawn((Vector2)transform.position + new Vector2(-1.6f, -0.6f));
 
+        Music.SetIntensity(3);                     // phase two: the drone settles in
         if (TimeLeap.Instance != null)
             TimeLeap.Instance.Announce("THE VESSEL ROOTS ITSELF", 2.2f);
     }

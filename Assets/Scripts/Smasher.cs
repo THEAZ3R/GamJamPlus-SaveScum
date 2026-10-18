@@ -78,7 +78,7 @@ public class Smasher : MonoBehaviour
 
         health = GetComponent<Health>();
         health.OnDeath += Die;
-        health.Init(950f * GameManager.HpScale(difficulty));   // it has to feel like a wall
+        health.Init(1200f * GameManager.HpScale(difficulty));   // it has to feel like a wall
         health.showBar = false;                       // the named bar rides the HUD
         health.invulnerable = true;
 
@@ -350,6 +350,7 @@ public class Smasher : MonoBehaviour
         GameManager.Shake(0.85f);
         GameManager.Instance.HitStop(0.12f);
         Sfx.PlayAt(transform.position, "horn", 0.9f, 1.2f);
+        Music.SetIntensity(3);                     // phase two: the heavy layer comes up
         if (TimeLeap.Instance != null) TimeLeap.Instance.Announce("THE SMASHER SEES RED", 2.2f);
     }
 
